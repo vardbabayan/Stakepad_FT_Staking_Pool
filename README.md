@@ -10,4 +10,5 @@
 
 ### This repository is `temporary` before we migrate soon into official `customer's repository`.
 
-### The processes of code management established by our team is implied to be used in `customer's repository` due to issues with providing repository from customer's side.
+#### Due to problems from customer side with providing a singe repository, we didn't manage to apply our processes yet.
+#### The established process of code management will be applied in `customer's repository`.
