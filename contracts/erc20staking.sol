@@ -5,7 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract FTStakingPool is ReentrancyGuard{
+contract StakingPoolErc20 is ReentrancyGuard, Ownable{
 
     using SafeERC20 for IERC20;
     error InsufficientAmount(uint256 amount);
@@ -26,18 +26,20 @@ contract FTStakingPool is ReentrancyGuard{
         IERC20 stakeToken;
         IERC20 rewardToken;
         mapping (address => User) userInfo;
+        bool isActive = false;
     }
     //Events
     event Stake(address user, uint256 amount);
     event Unstake(address user, uint256 amount);
     event Claim(address user, uint256 amount);
     event UpdatePool(uint256 totalStaked, uint256 accumulatedRewardTokenPerShare, uint256 lastBlockNumber);
+    event ActivatePool(bool status);
 
     Pool public pool;
 
-    constructor(uint256 rewardTokenPerBlock){
-        //pool.stakeToken = IERC20(stakeToken);
-        //pool.rewardToken = IERC20(rewardToken);
+    constructor(uint256 rewardTokenPerBlock, address stakeToken, address rewardToken){
+        pool.stakeToken = IERC20(stakeToken);
+        pool.rewardToken = IERC20(rewardToken);
         pool.lastAccessedBlock = block.timestamp;
         pool.rewardTokenPerBlock = rewardTokenPerBlock;
     }
@@ -80,7 +82,7 @@ contract FTStakingPool is ReentrancyGuard{
         setUserPendingRewards();
         pool.userInfo[msg.sender].amount += amount;
         pool.totalStaked += amount;
-        //pool.stakeToken.safeTransferFrom(msg.sender, address(this) , amount);
+        pool.stakeToken.safeTransferFrom(msg.sender, address(this) , amount);
 
         emit Stake(msg.sender, amount);
 
@@ -95,7 +97,7 @@ contract FTStakingPool is ReentrancyGuard{
         
         user.amount -= amount;
         pool.totalStaked -= amount;
-        //pool.stakeToken.safeTransfer(msg.sender, amount);
+        pool.stakeToken.safeTransfer(msg.sender, amount);
 
         emit Unstake(msg.sender,  amount);
 
@@ -111,10 +113,15 @@ contract FTStakingPool is ReentrancyGuard{
         uint256 pendingRewards = setUserPendingRewards();
         user.claimed += pendingRewards;
         pool.totalClaimed += pendingRewards;
-        //pool.rewardToken.safeTransfer(msg.sender, pendingRewards);
+        pool.rewardToken.safeTransfer(msg.sender, pendingRewards);
         emit Claim(msg.sender, pendingRewards);
 
         updatePool();
+    }
+
+    function activate() public onlyOwner {
+        isActive = true;
+        emit ActivatePool(true)
     }
 
 }
