@@ -27,6 +27,7 @@ contract StakingPoolErc20 is ReentrancyGuard, Ownable{
         IERC20 rewardToken;
         mapping (address => User) userInfo;
         bool isActive = false;
+        string name;
     }
     //Events
     event Stake(address user, uint256 amount);
@@ -37,11 +38,12 @@ contract StakingPoolErc20 is ReentrancyGuard, Ownable{
 
     Pool public pool;
 
-    constructor(uint256 rewardTokenPerBlock, address stakeToken, address rewardToken){
+    constructor(uint256 rewardTokenPerBlock, address stakeToken, address rewardToken, string name){
         pool.stakeToken = IERC20(stakeToken);
         pool.rewardToken = IERC20(rewardToken);
         pool.lastAccessedBlock = block.timestamp;
         pool.rewardTokenPerBlock = rewardTokenPerBlock;
+        pool.name = name;
     }
 
 
